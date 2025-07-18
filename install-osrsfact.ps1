@@ -106,7 +106,7 @@ function main {
         Add-Function-To-Profile
     }
 
-    Write-Host "`n[NOTE] Please restart PowerShell or run '. $PROFILE' to use the 'osrsfact' command." -ForegroundColor Cyan
+    Write-Host "`n[NOTE] Please restart PowerShell to use the 'osrsfact' command." -ForegroundColor Cyan
 }
 
 main
