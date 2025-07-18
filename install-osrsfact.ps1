@@ -19,7 +19,7 @@ function Write-Header {
     Write-Host "=== OSRS Fact Installer ===" -ForegroundColor Cyan
 }
 
-function Ensure-Profile {
+function Initialize-Profile {
     if (-not $PROFILE) {
         throw "The `$PROFILE variable is not defined in this session."
     }
@@ -40,7 +40,7 @@ function Ensure-Profile {
     }
 }
 
-function Function-Already-Exists {
+function Test-OsrsFactFunction {
     $profileContent = Get-Content -Path $PROFILE -Raw
     return $profileContent -match "function\s+osrsfact"
 }
@@ -98,9 +98,9 @@ https://oldschool.runescape.wiki/w/$($encodedTitle -replace '%20','_')
 
 function main {
     Write-Header
-    Ensure-Profile
+    Initialize-Profile
 
-    if (Function-Already-Exists) {
+    if (Test-OsrsFactFunction) {
         Write-Host "[INFO] The 'osrsfact' function already exists in your profile. No changes made." -ForegroundColor Yellow
     } else {
         Add-Function-To-Profile
