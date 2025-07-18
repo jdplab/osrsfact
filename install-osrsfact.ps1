@@ -8,7 +8,7 @@
 
 .NOTES
     Author: jdplabs
-    Version: 1.0
+    Version: 1.1
     License: MIT
 #>
 
@@ -20,6 +20,10 @@ function Write-Header {
 }
 
 function Ensure-Profile {
+    if (-not $PROFILE) {
+        throw "The `$PROFILE variable is not defined in this session."
+    }
+
     if (-not (Test-Path -Path $PROFILE)) {
         Write-Verbose "Creating PowerShell profile at: $PROFILE"
         try {
@@ -27,7 +31,8 @@ function Ensure-Profile {
             if (-not (Test-Path -Path $parentDir)) {
                 New-Item -Path $parentDir -ItemType Directory -Force | Out-Null
             }
-            New-Item -Path $PROFILE -ItemType File -Force | Out-Null
+            # Create a blank profile file
+            Out-File -FilePath $PROFILE -Encoding utf8 -Force
         } catch {
             Write-Error "Failed to create PowerShell profile: $($_.Exception.Message)"
             exit 1
@@ -47,27 +52,21 @@ function osrsfact {
     param ()
 
     try {
-        # Step 1: Get a random page title from the OSRS wiki
         $random = Invoke-RestMethod -Uri "https://oldschool.runescape.wiki/api.php?action=query&format=json&list=random&rnnamespace=0&rnlimit=1"
         $title = $random.query.random[0].title
         $encodedTitle = [uri]::EscapeDataString($title)
 
-        # Step 2: Fetch the parsed HTML content of the page
         $parsed = Invoke-RestMethod -Uri "https://oldschool.runescape.wiki/api.php?action=parse&format=json&page=$encodedTitle&prop=text"
         $html = $parsed.parse.text."*"
 
-        # Step 3: Extract the first paragraph using regex
         if ($html -match '(?s)<p>(.*?)</p>') {
-            # Remove HTML tags and decode HTML entities
             $rawText = $matches[1] -replace '<.*?>', '' -replace '&nbsp;', ' ' -replace '&amp;', '&'
             $decodedText = [System.Net.WebUtility]::HtmlDecode($rawText)
 
-            # Truncate to 600 characters if necessary
             if ($decodedText.Length -gt 600) {
                 $decodedText = $decodedText.Substring(0, 600) + "..."
             }
 
-            # Format output with title, text, and URL
             return @"
 **$title**
 
@@ -90,7 +89,7 @@ https://oldschool.runescape.wiki/w/$($encodedTitle -replace '%20','_')
 
     try {
         Add-Content -Path $PROFILE -Value "`n# OSRS Fact Function`n$functionCode"
-        Write-Host "✅ 'osrsfact' function added to your profile at $PROFILE" -ForegroundColor Green
+        Write-Host "'osrsfact' function added to your profile at $PROFILE" -ForegroundColor Green
     } catch {
         Write-Error "Failed to update profile: $($_.Exception.Message)"
         exit 1
@@ -102,12 +101,12 @@ function main {
     Ensure-Profile
 
     if (Function-Already-Exists) {
-        Write-Host "ℹ️ The 'osrsfact' function already exists in your profile. No changes made." -ForegroundColor Yellow
+        Write-Host "The 'osrsfact' function already exists in your profile. No changes made." -ForegroundColor Yellow
     } else {
         Add-Function-To-Profile
     }
 
-    Write-Host "`n➡️  Please restart PowerShell or run '. $PROFILE' to use the 'osrsfact' command." -ForegroundColor Cyan
+    Write-Host "`nPlease restart PowerShell or run '. $PROFILE' to load the 'osrsfact' function." -ForegroundColor Cyan
 }
 
 main
