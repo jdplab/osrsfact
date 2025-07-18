@@ -101,12 +101,12 @@ function main {
     Ensure-Profile
 
     if (Function-Already-Exists) {
-        Write-Host "The 'osrsfact' function already exists in your profile. No changes made." -ForegroundColor Yellow
+        Write-Host "[INFO] The 'osrsfact' function already exists in your profile. No changes made." -ForegroundColor Yellow
     } else {
         Add-Function-To-Profile
     }
 
-    Write-Host "`nPlease restart PowerShell or run '. $PROFILE' to load the 'osrsfact' function." -ForegroundColor Cyan
+    Write-Host "`n[NOTE] Please restart PowerShell or run '. $PROFILE' to use the 'osrsfact' command." -ForegroundColor Cyan
 }
 
 main
